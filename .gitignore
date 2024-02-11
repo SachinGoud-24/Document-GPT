@@ -2,6 +2,7 @@ aiat_libraries.txt
 app_test.py
 app.py
 test.ipynb
+.env
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -10,6 +11,7 @@ __pycache__/
 
 # C extensions
 *.so
+
 
 # Distribution / packaging
 .Python

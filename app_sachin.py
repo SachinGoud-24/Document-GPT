@@ -14,16 +14,18 @@ load_dotenv()
 os.environ['OPENAI_API_KEY'] = os.getenv('OPENAI_API_KEY')
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-def semantic_search(query, pdf_path):
+def semantic_search(query):
     data = SimpleDirectoryReader('data').load_data()
-    index = GPTVectorStoreIndex.from_documents(data)
-    response = index.query(query)
+    index = GPTVectorStoreIndex.from_documents(data, show_progress=True)
+    query_engine = index.as_query_engine()
+    response = query_engine.query(query)
     return(response)
 
-def summarize(pdf_path):
+def summarize():
     data = SimpleDirectoryReader('data').load_data()
     index = GPTListIndex.from_documents(data)
-    response = index.query("Summarize the document", response_mode='tree_summarize')
+    query_engine = index.as_query_engine(response_mode="tree_summarize",verbose=True, streaming = True )
+    response = query_engine.query("Summarize the document")
     return response
 
 
@@ -50,7 +52,7 @@ pdf= st.file_uploader("Upload your PDF", type=['pdf'])
 
 # What is the total experience of the candidate?
 if pdf is not None:
-    col1, col2, col3 = st.columns([2,1,1])
+    col1, col2, col3 = st.columns([1,1,2])
 
     with col1:
         pdf_path = "data/"+pdf.name
@@ -60,11 +62,17 @@ if pdf is not None:
     with col2:
         st.success("Search Area")
         query_search = st.text_area("Search your query")
-        if st.checkbox("Search"):
-            st.info("Your query"+query_search)
-            result = semantic_search(query_search,pdf_path)
-            st.write(result)
+        if st.button("Search"):
+            st.info("Your query: "+query_search)
+            
+            result = semantic_search(query_search)
+            st.text_area("Output", value=result, height=300)
+            # st.text(result)
 
     with col3:
         st.success("Document summary")
-        summary_res = summarize(pdf_path)
+        if st.button("Generate Summary"):
+            st.info("Generating the document summary...")
+            summary_res = summarize()
+            st.text_area("Output", value=summary_res, height=500)
+            # st.text(summary_res)
